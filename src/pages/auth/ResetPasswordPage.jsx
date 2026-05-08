@@ -1,0 +1,74 @@
+// src/pages/auth/ResetPasswordPage.jsx
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
+import AuthCard from '../../components/auth/AuthCard';
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
+import { authApi } from '../../api/auth.api';
+
+const schema = z
+  .object({
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export default function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const resetToken = location.state?.resetToken ?? '';
+  const [loading, setLoading] = useState(false);
+
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit = async ({ newPassword }) => {
+    if (!resetToken) {
+      toast.error('Missing reset token. Please start the reset process again.');
+      navigate('/forgot-password');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authApi.resetPassword({ resetToken, newPassword });
+      toast.success('Password reset successfully! Please sign in.');
+      navigate('/login');
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Reset failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AuthCard title="New password" subtitle="Choose a strong password for your account">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Input
+          label="New password"
+          type="password"
+          placeholder="Minimum 8 characters"
+          error={errors.newPassword?.message}
+          {...register('newPassword')}
+        />
+        <Input
+          label="Confirm new password"
+          type="password"
+          placeholder="Re-enter password"
+          error={errors.confirmPassword?.message}
+          {...register('confirmPassword')}
+        />
+        <Button type="submit" fullWidth isLoading={loading}>
+          Reset Password
+        </Button>
+      </form>
+    </AuthCard>
+  );
+}
