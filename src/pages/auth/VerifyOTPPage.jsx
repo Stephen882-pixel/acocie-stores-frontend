@@ -57,7 +57,7 @@ export default function VerifyOTPPage() {
     setLoading(true);
     try {
       const { data } = await authApi.verifyOtp({ email, otp });
-      setAuth(data.data);
+      setAuth(data);
       toast.success('Email verified!');
       navigate('/');
     } catch (err) {

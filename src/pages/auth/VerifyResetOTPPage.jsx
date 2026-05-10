@@ -53,9 +53,9 @@ export default function VerifyResetOTPPage() {
     if (otp.length < OTP_LENGTH) { toast.error('Enter the full 6-digit code.'); return; }
     setLoading(true);
     try {
-      const { data } = await authApi.verifyResetOtp({ email, otp });
+      await authApi.verifyResetOtp({ email, otp });
       toast.success('OTP verified! Set your new password.');
-      navigate('/reset-password', { state: { resetToken: data.data.resetToken } });
+      navigate('/reset-password', { state: { email } });
     } catch (err) {
       toast.error(err?.response?.data?.message ?? 'Invalid OTP.');
     } finally {

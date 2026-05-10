@@ -30,7 +30,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { data } = await authApi.login(values);
-      setAuth(data.data);
+      setAuth(data);
       toast.success('Welcome back!');
       const from = location.state?.from?.pathname ?? '/';
       navigate(from, { replace: true });

@@ -23,22 +23,22 @@ const schema = z
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const resetToken = location.state?.resetToken ?? '';
+  const email = location.state?.email ?? '';
   const [loading, setLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async ({ newPassword }) => {
-    if (!resetToken) {
-      toast.error('Missing reset token. Please start the reset process again.');
+  const onSubmit = async ({ newPassword, confirmPassword }) => {
+    if (!email) {
+      toast.error('Session expired. Please start the reset process again.');
       navigate('/forgot-password');
       return;
     }
     setLoading(true);
     try {
-      await authApi.resetPassword({ resetToken, newPassword });
+      await authApi.resetPassword({ email, newPassword, confirmPassword });
       toast.success('Password reset successfully! Please sign in.');
       navigate('/login');
     } catch (err) {
