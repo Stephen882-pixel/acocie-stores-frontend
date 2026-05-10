@@ -22,7 +22,7 @@ export default function HomePage() {
 
     categoriesApi.getAll()
       .then(({ data }) => {
-        const cats = Array.isArray(data) ? data : (data.data ?? []);
+        const cats = Array.isArray(data) ? data : (data.categories ?? data.data ?? []);
         setCategories(cats);
       })
       .catch(() => setCategories([]))

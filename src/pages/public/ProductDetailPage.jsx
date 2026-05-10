@@ -29,7 +29,7 @@ export default function ProductDetailPage() {
     window.scrollTo(0, 0);
     productsApi.getById(id)
       .then(({ data }) => {
-        const p = data.data ?? data;
+        const p = data.product ?? data.data ?? data;
         setProduct(p);
 
         const firstInStock = p.variants?.find((v) => v.inventory?.quantity > 0) ?? p.variants?.[0];
