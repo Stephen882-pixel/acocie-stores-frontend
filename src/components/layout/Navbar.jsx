@@ -11,6 +11,7 @@ export default function Navbar() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -24,28 +25,57 @@ export default function Navbar() {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = searchInput.trim();
+    if (!q) return;
+    navigate(`/products?q=${encodeURIComponent(q)}`);
+    setSearchInput('');
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 flex items-center gap-4 h-16">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-1 flex-shrink-0">
           <span className="text-2xl font-bold text-scarlet-600">Acocie</span>
           <span className="text-xs text-gray-400 font-normal hidden sm:block">Stores</span>
         </Link>
 
+        {/* Search bar — center */}
+        <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:flex">
+          <div className="flex w-full">
+            <input
+              type="text"
+              placeholder="Search products…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full border border-gray-300 rounded-l px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scarlet-500 focus:border-scarlet-500 transition-colors"
+            />
+            <button
+              type="submit"
+              className="bg-scarlet-600 hover:bg-scarlet-700 text-white px-3 rounded-r border border-scarlet-600 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 flex-shrink-0">
           <Link to="/products" className="hover:text-scarlet-600 transition-colors">Products</Link>
-          {user?.role === 'vendor' || user?.role === 'admin' || user?.role === 'super_admin' ? (
+          {(user?.role === 'vendor' || user?.role === 'admin' || user?.role === 'super_admin') && (
             <Link to="/vendor" className="hover:text-scarlet-600 transition-colors">Vendor</Link>
-          ) : null}
-          {user?.role === 'admin' || user?.role === 'super_admin' ? (
+          )}
+          {(user?.role === 'admin' || user?.role === 'super_admin') && (
             <Link to="/admin" className="hover:text-scarlet-600 transition-colors">Admin</Link>
-          ) : null}
+          )}
         </nav>
 
         {/* Right actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-auto flex-shrink-0">
           {user ? (
             <>
               <Link to="/cart" className="p-2 rounded-full hover:bg-gray-100 transition-colors" title="Cart">
