@@ -4,6 +4,9 @@ import App from '../App';
 
 // Public pages
 import HomePage from '../pages/public/HomePage';
+import ProductsPage from '../pages/public/ProductsPage';
+import ProductDetailPage from '../pages/public/ProductDetailPage';
+import CategoryPage from '../pages/public/CategoryPage';
 
 // Auth pages
 import LoginPage from '../pages/auth/LoginPage';
@@ -22,10 +25,13 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      // ── Public ──────────────────────────────────────────────
-      { index: true, element: <HomePage /> },
+      // ── Public ──────────────────────────────────────────────────
+      { index: true,          element: <HomePage /> },
+      { path: 'products',     element: <ProductsPage /> },
+      { path: 'products/:id', element: <ProductDetailPage /> },
+      { path: 'categories/:id', element: <CategoryPage /> },
 
-      // ── Auth (redirect away if already logged in) ────────────
+      // ── Auth (redirect away if already logged in) ────────────────
       { path: 'login',            element: <PublicRoute><LoginPage /></PublicRoute> },
       { path: 'register',         element: <PublicRoute><RegisterPage /></PublicRoute> },
       { path: 'verify-otp',       element: <VerifyOTPPage /> },
@@ -33,12 +39,12 @@ const router = createBrowserRouter([
       { path: 'verify-reset-otp', element: <VerifyResetOTPPage /> },
       { path: 'reset-password',   element: <ResetPasswordPage /> },
 
-      // ── Customer (protected) — Phase 3 ───────────────────────
-      // { path: 'cart',     element: <PrivateRoute><CartPage /></PrivateRoute> },
-      // { path: 'checkout', element: <PrivateRoute><CheckoutPage /></PrivateRoute> },
-      // { path: 'orders',   element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
+      // ── Customer (protected) — Phase 3 ───────────────────────────
+      // { path: 'cart',       element: <PrivateRoute><CartPage /></PrivateRoute> },
+      // { path: 'checkout',   element: <PrivateRoute><CheckoutPage /></PrivateRoute> },
+      // { path: 'orders',     element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
       // { path: 'orders/:id', element: <PrivateRoute><OrderDetailPage /></PrivateRoute> },
-      // { path: 'profile',  element: <PrivateRoute><ProfilePage /></PrivateRoute> },
+      // { path: 'profile',    element: <PrivateRoute><ProfilePage /></PrivateRoute> },
     ],
   },
 ]);
