@@ -33,6 +33,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Sync filters → URL params
   const syncUrl = useCallback((f, q, p) => {
@@ -49,6 +50,7 @@ export default function ProductsPage() {
 
   const fetchProducts = useCallback(async (f, q, p) => {
     setLoading(true);
+    setError(null);
     try {
       let res;
       if (q) {
@@ -63,12 +65,20 @@ export default function ProductsPage() {
         res = await productsApi.getAll(params);
       }
       const body = res.data;
-      // handle both { products, pagination } and flat array shapes
-      const list = body.products ?? body.data?.products ?? (Array.isArray(body) ? body : []);
-      const pag  = body.pagination ?? body.data?.pagination ?? null;
+      // handle { products, pagination }, { data: { products } }, or flat array
+      const list = body.products
+        ?? body.data?.products
+        ?? (Array.isArray(body) ? body : []);
+      const rawPag = body.pagination ?? body.data?.pagination ?? null;
+      // normalise: API may return .pages or .totalPages
+      const pag = rawPag
+        ? { ...rawPag, totalPages: rawPag.totalPages ?? rawPag.pages ?? 1 }
+        : null;
       setProducts(list);
       setPagination(pag);
-    } catch {
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+      setError(err?.response?.data?.message ?? err?.message ?? 'Failed to load products');
       setProducts([]);
     } finally {
       setLoading(false);
@@ -152,7 +162,14 @@ export default function ProductsPage() {
             </p>
           )}
 
-          <ProductGrid products={products} loading={loading} />
+          {error ? (
+            <div className="flex flex-col items-center justify-center py-20 text-red-500 gap-2">
+              <p className="font-medium">Error loading products</p>
+              <p className="text-sm text-gray-500">{error}</p>
+            </div>
+          ) : (
+            <ProductGrid products={products} loading={loading} />
+          )}
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
