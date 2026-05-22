@@ -1,6 +1,5 @@
-// src/pages/auth/ResetPasswordPage.jsx
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,16 +8,16 @@ import AuthCard from '../../components/auth/AuthCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { authApi } from '../../api/auth.api';
+import { getApiErrorMessage } from '../../utils/apiError';
+import { passwordField, withPasswordConfirmation } from '../../utils/passwordSchema';
 
-const schema = z
-  .object({
-    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+const schema = withPasswordConfirmation(
+  z.object({
+    newPassword: passwordField,
     confirmPassword: z.string(),
-  })
-  .refine((d) => d.newPassword === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+  }),
+  'newPassword'
+);
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -31,18 +30,13 @@ export default function ResetPasswordPage() {
   });
 
   const onSubmit = async ({ newPassword, confirmPassword }) => {
-    if (!email) {
-      toast.error('Session expired. Please start the reset process again.');
-      navigate('/forgot-password');
-      return;
-    }
     setLoading(true);
     try {
       await authApi.resetPassword({ email, newPassword, confirmPassword });
       toast.success('Password reset successfully! Please sign in.');
-      navigate('/login');
+      navigate('/login', { replace: true, state: { email } });
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Reset failed. Try again.');
+      toast.error(getApiErrorMessage(err, 'Reset failed. Try again.'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +48,7 @@ export default function ResetPasswordPage() {
         <Input
           label="New password"
           type="password"
-          placeholder="Minimum 8 characters"
+          placeholder="Min 8 chars, upper, lower, number"
           error={errors.newPassword?.message}
           {...register('newPassword')}
         />
@@ -69,6 +63,12 @@ export default function ResetPasswordPage() {
           Reset Password
         </Button>
       </form>
+
+      <p className="text-center text-sm text-gray-500 mt-6">
+        <Link to="/login" className="text-scarlet-600 hover:underline">
+          ← Back to sign in
+        </Link>
+      </p>
     </AuthCard>
   );
 }

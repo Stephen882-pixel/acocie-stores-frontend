@@ -1,4 +1,3 @@
-// src/pages/auth/RegisterPage.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -9,20 +8,25 @@ import AuthCard from '../../components/auth/AuthCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { authApi } from '../../api/auth.api';
+import { getApiErrorMessage } from '../../utils/apiError';
+import { passwordField, withPasswordConfirmation } from '../../utils/passwordSchema';
 
-const schema = z
-  .object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName:  z.string().min(1, 'Last name is required'),
-    email:     z.string().email('Enter a valid email'),
-    phone:     z.string().min(7, 'Enter a valid phone number'),
-    password:  z.string().min(8, 'Password must be at least 8 characters'),
+const schema = withPasswordConfirmation(
+  z.object({
+    firstName: z.string().min(2, 'First name is required'),
+    lastName: z.string().min(2, 'Last name is required'),
+    email: z.string().email('Enter a valid email'),
+    phone: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || /^\+?[1-9]\d{6,14}$/.test(v), {
+        message: 'Enter a valid phone number',
+      }),
+    password: passwordField,
     confirmPassword: z.string(),
   })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+);
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -32,14 +36,18 @@ export default function RegisterPage() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async ({ confirmPassword: _, ...values }) => {
+  const onSubmit = async ({ confirmPassword, phone, ...rest }) => {
     setLoading(true);
     try {
-      await authApi.register(values);
+      const payload = {
+        ...rest,
+        ...(phone?.trim() ? { phone: phone.trim() } : {}),
+      };
+      await authApi.register(payload);
       toast.success('Account created! Check your email for the OTP.');
-      navigate('/verify-otp', { state: { email: values.email } });
+      navigate('/verify-otp', { state: { email: rest.email } });
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Registration failed.');
+      toast.error(getApiErrorMessage(err, 'Registration failed.'));
     } finally {
       setLoading(false);
     }
@@ -74,7 +82,7 @@ export default function RegisterPage() {
         <Input
           label="Phone number"
           type="tel"
-          placeholder="+263771234567"
+          placeholder="+263771234567 (optional)"
           error={errors.phone?.message}
           {...register('phone')}
         />
@@ -82,7 +90,7 @@ export default function RegisterPage() {
         <Input
           label="Password"
           type="password"
-          placeholder="Minimum 8 characters"
+          placeholder="Min 8 chars, upper, lower, number"
           error={errors.password?.message}
           {...register('password')}
         />

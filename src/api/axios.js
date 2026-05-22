@@ -8,12 +8,10 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Lazy import to avoid circular dependency at module load time
 function getAuthStore() {
   return import('../store/authStore').then((m) => m.useAuthStore);
 }
 
-// Attach access token to every request
 api.interceptors.request.use(async (config) => {
   try {
     const useAuthStore = await getAuthStore();
@@ -25,21 +23,31 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Auto-refresh on 401
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const isAuthRefresh = original?.url?.includes('/auth/refresh-token');
+
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      !isAuthRefresh
+    ) {
       original._retry = true;
       try {
         const useAuthStore = await getAuthStore();
         const refreshToken = useAuthStore.getState().refreshToken;
+        if (!refreshToken) throw new Error('No refresh token');
+
         const { data } = await axios.post(`${BASE_URL}/auth/refresh-token`, {
           refreshToken,
         });
-        useAuthStore.getState().setAccessToken(data.accessToken);
-        original.headers.Authorization = `Bearer ${data.data.accessToken}`;
+        const accessToken = data.accessToken ?? data.data?.accessToken;
+        if (!accessToken) throw new Error('No access token in refresh response');
+
+        useAuthStore.getState().setAccessToken(accessToken);
+        original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
       } catch {
         const useAuthStore = await getAuthStore();
