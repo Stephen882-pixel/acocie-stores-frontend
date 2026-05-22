@@ -1,5 +1,4 @@
-// src/pages/auth/LoginPage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,33 +8,69 @@ import AuthCard from '../../components/auth/AuthCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { authApi } from '../../api/auth.api';
-import { useAuthStore } from '../../store/authStore';
+import { extractAuthPayload, REMEMBER_EMAIL_KEY } from '../../utils/auth';
+import { getApiErrorMessage } from '../../utils/apiError';
+import { useAuth } from '../../hooks/useAuth';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
   password: z.string().min(1, 'Password is required'),
+  rememberMe: z.boolean().optional(),
 });
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const { setAuth } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  const defaultEmail =
+    location.state?.email ??
+    (typeof localStorage !== 'undefined'
+      ? localStorage.getItem(REMEMBER_EMAIL_KEY) ?? ''
+      : '');
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
+    defaultValues: {
+      email: defaultEmail,
+      rememberMe: Boolean(defaultEmail),
+    },
   });
 
-  const onSubmit = async (values) => {
+  useEffect(() => {
+    if (location.state?.email) {
+      toast.success('Email verified! Sign in to continue.');
+    }
+  }, [location.state?.email]);
+
+  const onSubmit = async ({ rememberMe, ...values }) => {
     setLoading(true);
     try {
       const { data } = await authApi.login(values);
-      setAuth(data);
+      const auth = extractAuthPayload(data);
+      if (!auth) {
+        toast.error('Unexpected login response. Please try again.');
+        return;
+      }
+      setAuth(auth);
+
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_EMAIL_KEY, values.email);
+      } else {
+        localStorage.removeItem(REMEMBER_EMAIL_KEY);
+      }
+
       toast.success('Welcome back!');
       const from = location.state?.from?.pathname ?? '/';
       navigate(from, { replace: true });
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Login failed. Please try again.');
+      if (err?.response?.data?.needsVerification) {
+        toast.error('Please verify your email first.');
+        navigate('/verify-otp', { state: { email: values.email }, replace: true });
+        return;
+      }
+      toast.error(getApiErrorMessage(err, 'Login failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +96,11 @@ export default function LoginPage() {
 
         <div className="flex items-center justify-between text-sm">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" className="accent-scarlet-600" />
+            <input
+              type="checkbox"
+              className="accent-scarlet-600"
+              {...register('rememberMe')}
+            />
             <span className="text-gray-600">Remember me</span>
           </label>
           <Link to="/forgot-password" className="text-scarlet-600 hover:underline">
@@ -75,7 +114,7 @@ export default function LoginPage() {
       </form>
 
       <p className="text-center text-sm text-gray-500 mt-6">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link to="/register" className="text-scarlet-600 font-medium hover:underline">
           Create one
         </Link>

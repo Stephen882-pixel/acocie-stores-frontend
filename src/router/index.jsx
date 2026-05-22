@@ -15,10 +15,12 @@ import VerifyOTPPage from '../pages/auth/VerifyOTPPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import VerifyResetOTPPage from '../pages/auth/VerifyResetOTPPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
+import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 
 // Route guards
 import PublicRoute from './PublicRoute';
 import PrivateRoute from './PrivateRoute';
+import AuthEmailRoute from './AuthEmailRoute';
 
 const router = createBrowserRouter([
   {
@@ -26,18 +28,53 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       // ── Public ──────────────────────────────────────────────────
-      { index: true,          element: <HomePage /> },
-      { path: 'products',     element: <ProductsPage /> },
+      { index: true, element: <HomePage /> },
+      { path: 'products', element: <ProductsPage /> },
       { path: 'products/:id', element: <ProductDetailPage /> },
       { path: 'categories/:id', element: <CategoryPage /> },
 
-      // ── Auth (redirect away if already logged in) ────────────────
-      { path: 'login',            element: <PublicRoute><LoginPage /></PublicRoute> },
-      { path: 'register',         element: <PublicRoute><RegisterPage /></PublicRoute> },
-      { path: 'verify-otp',       element: <VerifyOTPPage /> },
-      { path: 'forgot-password',  element: <ForgotPasswordPage /> },
-      { path: 'verify-reset-otp', element: <VerifyResetOTPPage /> },
-      { path: 'reset-password',   element: <ResetPasswordPage /> },
+      // ── Auth ────────────────────────────────────────────────────
+      { path: 'login', element: <PublicRoute><LoginPage /></PublicRoute> },
+      { path: 'register', element: <PublicRoute><RegisterPage /></PublicRoute> },
+      {
+        path: 'verify-otp',
+        element: (
+          <PublicRoute>
+            <AuthEmailRoute redirectTo="/register">
+              <VerifyOTPPage />
+            </AuthEmailRoute>
+          </PublicRoute>
+        ),
+      },
+      { path: 'forgot-password', element: <PublicRoute><ForgotPasswordPage /></PublicRoute> },
+      {
+        path: 'verify-reset-otp',
+        element: (
+          <PublicRoute>
+            <AuthEmailRoute redirectTo="/forgot-password">
+              <VerifyResetOTPPage />
+            </AuthEmailRoute>
+          </PublicRoute>
+        ),
+      },
+      {
+        path: 'reset-password',
+        element: (
+          <PublicRoute>
+            <AuthEmailRoute redirectTo="/forgot-password">
+              <ResetPasswordPage />
+            </AuthEmailRoute>
+          </PublicRoute>
+        ),
+      },
+      {
+        path: 'change-password',
+        element: (
+          <PrivateRoute>
+            <ChangePasswordPage />
+          </PrivateRoute>
+        ),
+      },
 
       // ── Customer (protected) — Phase 3 ───────────────────────────
       // { path: 'cart',       element: <PrivateRoute><CartPage /></PrivateRoute> },

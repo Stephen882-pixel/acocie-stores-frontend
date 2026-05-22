@@ -8,7 +8,7 @@ import { useState } from 'react';
  *   name   — product name (used as alt text)
  */
 export default function ProductImages({ images = [], name = 'Product' }) {
-  const sorted = [...images].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const sorted = [...images].sort((a, b) => (a.displayOrder ?? a.sortOrder ?? 0) - (b.displayOrder ?? b.sortOrder ?? 0));
   const [active, setActive] = useState(
     sorted.findIndex((img) => img.isPrimary) !== -1
       ? sorted.findIndex((img) => img.isPrimary)
@@ -30,7 +30,7 @@ export default function ProductImages({ images = [], name = 'Product' }) {
       {/* Main image */}
       <div className="aspect-square bg-gray-100 rounded-card overflow-hidden">
         <img
-          src={sorted[active]?.url}
+          src={sorted[active]?.imageUrl ?? sorted[active]?.url}
           alt={`${name} — image ${active + 1}`}
           className="w-full h-full object-cover"
         />
@@ -47,7 +47,7 @@ export default function ProductImages({ images = [], name = 'Product' }) {
                 active === idx ? 'border-scarlet-600' : 'border-transparent hover:border-gray-300'
               }`}
             >
-              <img src={img.url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              <img src={img.imageUrl ?? img.url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>

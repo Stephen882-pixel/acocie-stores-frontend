@@ -1,4 +1,3 @@
-// src/pages/auth/ForgotPasswordPage.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -9,6 +8,7 @@ import AuthCard from '../../components/auth/AuthCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { authApi } from '../../api/auth.api';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const schema = z.object({ email: z.string().email('Enter a valid email') });
 
@@ -24,10 +24,10 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       await authApi.forgotPassword(email);
-      toast.success('OTP sent to your email.');
+      toast.success('If that email exists, a reset code has been sent.');
       navigate('/verify-reset-otp', { state: { email } });
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Something went wrong.');
+      toast.error(getApiErrorMessage(err, 'Something went wrong.'));
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,9 @@ export default function ForgotPasswordPage() {
         </Button>
       </form>
       <p className="text-center text-sm text-gray-500 mt-6">
-        <Link to="/login" className="text-scarlet-600 hover:underline">← Back to sign in</Link>
+        <Link to="/login" className="text-scarlet-600 hover:underline">
+          ← Back to sign in
+        </Link>
       </p>
     </AuthCard>
   );
