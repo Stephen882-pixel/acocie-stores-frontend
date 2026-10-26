@@ -11,6 +11,7 @@ export const useAuthStore = create(
       setAuth: ({ user, accessToken, refreshToken }) =>
         set({ user, accessToken, refreshToken }),
       setAccessToken: (accessToken) => set({ accessToken }),
+      updateUser: (fields) => set((s) => ({ user: s.user ? { ...s.user, ...fields } : s.user })),
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
     }),
     { name: 'acocie-auth' }

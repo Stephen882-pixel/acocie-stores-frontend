@@ -19,6 +19,7 @@ import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 
 // Customer pages
 import CartPage from '../pages/customer/CartPage';
+import ProfilePage from '../pages/customer/ProfilePage';
 
 // Route guards
 import PublicRoute from './PublicRoute';
@@ -84,7 +85,7 @@ const router = createBrowserRouter([
       // { path: 'checkout',   element: <PrivateRoute><CheckoutPage /></PrivateRoute> },
       // { path: 'orders',     element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
       // { path: 'orders/:id', element: <PrivateRoute><OrderDetailPage /></PrivateRoute> },
-      // { path: 'profile',    element: <PrivateRoute><ProfilePage /></PrivateRoute> },
+      { path: 'profile', element: <PrivateRoute><ProfilePage /></PrivateRoute> },
     ],
   },
 ]);
