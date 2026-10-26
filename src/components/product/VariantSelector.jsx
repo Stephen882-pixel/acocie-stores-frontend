@@ -20,7 +20,7 @@ export default function VariantSelector({ variants = [], selectedId, onSelect })
       </p>
       <div className="flex flex-wrap gap-2">
         {variants.map((v) => {
-          const outOfStock = v.inventory?.quantity != null && v.inventory.quantity <= 0;
+          const outOfStock = v.stockQuantity != null && v.stockQuantity <= 0;
           const isSelected = v.id === selectedId;
 
           return (

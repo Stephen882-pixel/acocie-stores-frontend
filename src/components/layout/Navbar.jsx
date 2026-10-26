@@ -1,6 +1,7 @@
 // src/components/layout/Navbar.jsx
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useCartStore } from '../../store/cartStore';
 import { authApi } from '../../api/auth.api';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ export default function Navbar() {
   const user = useAuthStore((s) => s.user);
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const logout = useAuthStore((s) => s.logout);
+  const cartCount = useCartStore((s) => s.cart.itemCount);
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -76,13 +78,19 @@ export default function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+          <Link to="/cart" className="relative p-2 rounded-full hover:bg-gray-100 transition-colors" title="Cart">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-scarlet-600 text-white text-[10px] font-bold flex items-center justify-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </Link>
+
           {user ? (
             <>
-              <Link to="/cart" className="p-2 rounded-full hover:bg-gray-100 transition-colors" title="Cart">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </Link>
 
               <div className="relative">
                 <button

@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { productsApi } from '../../api/products.api';
-import { useAuthStore } from '../../store/authStore';
+import { useCartStore } from '../../store/cartStore';
+import { getApiErrorMessage } from '../../utils/apiError';
 import ProductImages from '../../components/product/ProductImages';
 import VariantSelector from '../../components/product/VariantSelector';
 import ProductGrid from '../../components/product/ProductGrid';
@@ -13,7 +14,7 @@ const TABS = ['Description', 'Shipping Info'];
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
+  const addItem = useCartStore((s) => s.addItem);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,7 @@ export default function ProductDetailPage() {
         const p = data.product ?? data.data ?? data;
         setProduct(p);
 
-        const firstInStock = p.variants?.find((v) => v.inventory?.quantity > 0) ?? p.variants?.[0];
+        const firstInStock = p.variants?.find((v) => v.stockQuantity > 0) ?? p.variants?.[0];
         if (firstInStock) setSelectedVariantId(firstInStock.id);
 
         if (p.category?.id) {
@@ -51,23 +52,32 @@ export default function ProductDetailPage() {
   const selectedVariant = product?.variants?.find((v) => v.id === selectedVariantId);
   const displayPrice = parseFloat(selectedVariant?.price ?? product?.price) || 0;
   const compareAt = parseFloat(product?.compareAtPrice) || 0;
-  const inStock = selectedVariant
-    ? (selectedVariant.inventory?.quantity ?? 0) > 0
-    : true;
+  const hasVariants = product?.variants?.length > 0;
+  const stock = selectedVariant
+    ? selectedVariant.stockQuantity ?? 0
+    : product?.inventory?.availableStock ?? 0;
+  const inStock = stock > 0;
 
-  const handleAddToCart = async () => {
-    if (!selectedVariantId) {
+  const handleAddToCart = async ({ goToCart = false } = {}) => {
+    if (hasVariants && !selectedVariantId) {
       toast.error('Please select a variant.');
-      return;
-    }
-    if (!user) {
-      toast('Please sign in to add items to your cart.', { icon: '🔒' });
-      navigate('/login');
       return;
     }
     setAddingToCart(true);
     try {
-      toast.success('Added to cart! (Cart coming in Phase 3)');
+      await addItem({ productId: product.id, variantId: selectedVariantId, quantity });
+      if (goToCart) {
+        navigate('/cart');
+      } else {
+        toast.success('Added to cart!');
+      }
+    } catch (err) {
+      const available = err?.response?.data?.availableStock;
+      toast.error(
+        available !== undefined
+          ? `Only ${available} available${available > 0 ? ' — some may already be in your cart' : ''}.`
+          : getApiErrorMessage(err, 'Could not add to cart.')
+      );
     } finally {
       setAddingToCart(false);
     }
@@ -189,8 +199,9 @@ export default function ProductDetailPage() {
               </button>
               <span className="px-4 py-1.5 text-sm font-medium border-x border-gray-300">{quantity}</span>
               <button
-                onClick={() => setQuantity((q) => q + 1)}
-                className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 transition-colors"
+                onClick={() => setQuantity((q) => Math.min(stock, 100, q + 1))}
+                disabled={quantity >= Math.min(stock, 100)}
+                className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40"
               >
                 +
               </button>
@@ -200,15 +211,15 @@ export default function ProductDetailPage() {
           {/* CTA buttons */}
           <div className="flex gap-3 flex-col sm:flex-row">
             <button
-              onClick={handleAddToCart}
+              onClick={() => handleAddToCart()}
               disabled={!inStock || addingToCart}
               className="btn-primary flex-1 py-3 text-base disabled:opacity-50"
             >
               {addingToCart ? 'Adding…' : 'Add to Cart'}
             </button>
             <button
-              onClick={handleAddToCart}
-              disabled={!inStock}
+              onClick={() => handleAddToCart({ goToCart: true })}
+              disabled={!inStock || addingToCart}
               className="btn-secondary flex-1 py-3 text-base disabled:opacity-50"
             >
               Buy Now
