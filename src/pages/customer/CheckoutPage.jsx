@@ -10,7 +10,7 @@ import { usersApi } from '../../api/users.api';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { canCheckout, PAYMENT_METHODS } from '../../utils/checkout';
+import { isCustomerAccount, PAYMENT_METHODS } from '../../utils/checkout';
 
 const NOTES_MAX = 1000;
 
@@ -36,7 +36,7 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
-    if (!canCheckout(user)) return;
+    if (!isCustomerAccount(user)) return;
     checkoutApi.getSummary()
       .then(({ data }) => applySummary(data))
       .catch((err) => {
@@ -46,7 +46,7 @@ export default function CheckoutPage() {
       .finally(() => setLoading(false));
   }, [user, navigate]);
 
-  if (!canCheckout(user)) {
+  if (!isCustomerAccount(user)) {
     return (
       <div className="max-w-xl mx-auto px-4 py-20 text-center">
         <h1 className="text-xl font-semibold text-gray-900">Checkout unavailable</h1>

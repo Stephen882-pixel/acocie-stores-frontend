@@ -8,7 +8,7 @@ import { cartApi } from '../../api/cart.api';
 import CartItemRow from '../../components/cart/CartItemRow';
 import Button from '../../components/ui/Button';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { canCheckout } from '../../utils/checkout';
+import { isCustomerAccount } from '../../utils/checkout';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export default function CartPage() {
       navigate('/login', { state: { from: { pathname: '/cart' } } });
       return;
     }
-    if (!canCheckout(user)) {
+    if (!isCustomerAccount(user)) {
       toast.error('Only customer accounts can place orders.');
       return;
     }

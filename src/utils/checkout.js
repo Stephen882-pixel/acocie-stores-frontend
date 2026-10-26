@@ -3,7 +3,7 @@
 // Roles the backend's isCustomer middleware lets through /checkout and /orders.
 export const CHECKOUT_ROLES = ['customer', 'vendor_pending'];
 
-export const canCheckout = (user) => CHECKOUT_ROLES.includes(user?.role);
+export const isCustomerAccount = (user) => CHECKOUT_ROLES.includes(user?.role);
 
 export const PAYMENT_METHODS = [
   { value: 'cash_on_delivery', label: 'Cash on delivery', description: 'Pay when your order arrives.', enabled: true },
