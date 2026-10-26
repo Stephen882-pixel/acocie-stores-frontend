@@ -8,10 +8,12 @@ import { cartApi } from '../../api/cart.api';
 import CartItemRow from '../../components/cart/CartItemRow';
 import Button from '../../components/ui/Button';
 import { getApiErrorMessage } from '../../utils/apiError';
+import { canCheckout } from '../../utils/checkout';
 
 export default function CartPage() {
   const navigate = useNavigate();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const user = useAuthStore((s) => s.user);
   const cart = useCartStore((s) => s.cart);
   const loaded = useCartStore((s) => s.loaded);
   const fetchCart = useCartStore((s) => s.fetchCart);
@@ -45,6 +47,10 @@ export default function CartPage() {
       navigate('/login', { state: { from: { pathname: '/cart' } } });
       return;
     }
+    if (!canCheckout(user)) {
+      toast.error('Only customer accounts can place orders.');
+      return;
+    }
     setCheckingOut(true);
     try {
       const { data } = await cartApi.validate();
@@ -55,8 +61,7 @@ export default function CartPage() {
         return;
       }
       setBlockingIssues([]);
-      // TODO: navigate('/checkout') once the checkout page lands
-      toast('Checkout is coming next.', { icon: '🛠' });
+      navigate('/checkout');
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Could not validate your cart.'));
     } finally {
