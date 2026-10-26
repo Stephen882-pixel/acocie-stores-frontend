@@ -25,10 +25,17 @@ import OrderConfirmationPage from '../pages/customer/OrderConfirmationPage';
 import OrderHistoryPage from '../pages/customer/OrderHistoryPage';
 import OrderDetailPage from '../pages/customer/OrderDetailPage';
 
+// Vendor pages
+import VendorLayout from '../components/vendor/VendorLayout';
+import VendorDashboardPage from '../pages/vendor/VendorDashboardPage';
+import VendorOrdersPage from '../pages/vendor/VendorOrdersPage';
+import VendorOrderDetailPage from '../pages/vendor/VendorOrderDetailPage';
+
 // Route guards
 import PublicRoute from './PublicRoute';
 import PrivateRoute from './PrivateRoute';
 import AuthEmailRoute from './AuthEmailRoute';
+import RoleRoute from './RoleRoute';
 
 const router = createBrowserRouter([
   {
@@ -90,6 +97,17 @@ const router = createBrowserRouter([
       { path: 'checkout/success', element: <PrivateRoute><OrderConfirmationPage /></PrivateRoute> },
       { path: 'orders', element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
       { path: 'orders/:id', element: <PrivateRoute><OrderDetailPage /></PrivateRoute> },
+
+      // ── Vendor ──────────────────────────────────────────────────
+      {
+        path: 'vendor',
+        element: <RoleRoute allowedRoles={['vendor']}><VendorLayout /></RoleRoute>,
+        children: [
+          { index: true, element: <VendorDashboardPage /> },
+          { path: 'orders', element: <VendorOrdersPage /> },
+          { path: 'orders/:id', element: <VendorOrderDetailPage /> },
+        ],
+      },
       { path: 'profile', element: <PrivateRoute><ProfilePage /></PrivateRoute> },
     ],
   },
