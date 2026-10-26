@@ -11,7 +11,9 @@ export default function ProductCard({ product }) {
     ? Math.min(...product.variants.map((v) => parseFloat(v.price) || 0))
     : parseFloat(product.price) || 0;
   const compareAt = parseFloat(product.compareAtPrice) || 0;
-  const inStock = product.variants?.some((v) => v.inventory?.quantity > 0) ?? true;
+  const inStock = product.variants?.length
+    ? product.variants.some((v) => v.stockQuantity > 0)
+    : (product.inventory?.availableStock ?? 1) > 0;
 
   return (
     <Link

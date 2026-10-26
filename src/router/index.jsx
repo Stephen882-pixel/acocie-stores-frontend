@@ -17,6 +17,9 @@ import VerifyResetOTPPage from '../pages/auth/VerifyResetOTPPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 
+// Customer pages
+import CartPage from '../pages/customer/CartPage';
+
 // Route guards
 import PublicRoute from './PublicRoute';
 import PrivateRoute from './PrivateRoute';
@@ -77,7 +80,7 @@ const router = createBrowserRouter([
       },
 
       // ── Customer (protected) — Phase 3 ───────────────────────────
-      // { path: 'cart',       element: <PrivateRoute><CartPage /></PrivateRoute> },
+      { path: 'cart', element: <CartPage /> }, // guests allowed — API supports session carts
       // { path: 'checkout',   element: <PrivateRoute><CheckoutPage /></PrivateRoute> },
       // { path: 'orders',     element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
       // { path: 'orders/:id', element: <PrivateRoute><OrderDetailPage /></PrivateRoute> },
