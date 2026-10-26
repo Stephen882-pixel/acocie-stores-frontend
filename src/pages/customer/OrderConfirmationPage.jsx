@@ -58,7 +58,8 @@ export default function OrderConfirmationPage() {
         <OrderTotals items={order.items} totals={order} />
       </div>
 
-      <div className="flex justify-center mt-8">
+      <div className="flex justify-center gap-3 mt-8">
+        <Link to={`/orders/${order.id}`} className="btn-secondary">View order</Link>
         <Link to="/products" className="btn-primary">Continue shopping</Link>
       </div>
     </div>

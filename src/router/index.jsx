@@ -22,6 +22,8 @@ import CartPage from '../pages/customer/CartPage';
 import ProfilePage from '../pages/customer/ProfilePage';
 import CheckoutPage from '../pages/customer/CheckoutPage';
 import OrderConfirmationPage from '../pages/customer/OrderConfirmationPage';
+import OrderHistoryPage from '../pages/customer/OrderHistoryPage';
+import OrderDetailPage from '../pages/customer/OrderDetailPage';
 
 // Route guards
 import PublicRoute from './PublicRoute';
@@ -86,8 +88,8 @@ const router = createBrowserRouter([
       { path: 'cart', element: <CartPage /> }, // guests allowed — API supports session carts
       { path: 'checkout', element: <PrivateRoute><CheckoutPage /></PrivateRoute> },
       { path: 'checkout/success', element: <PrivateRoute><OrderConfirmationPage /></PrivateRoute> },
-      // { path: 'orders',     element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
-      // { path: 'orders/:id', element: <PrivateRoute><OrderDetailPage /></PrivateRoute> },
+      { path: 'orders', element: <PrivateRoute><OrderHistoryPage /></PrivateRoute> },
+      { path: 'orders/:id', element: <PrivateRoute><OrderDetailPage /></PrivateRoute> },
       { path: 'profile', element: <PrivateRoute><ProfilePage /></PrivateRoute> },
     ],
   },
