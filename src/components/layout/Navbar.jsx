@@ -68,7 +68,7 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 flex-shrink-0">
           <Link to="/products" className="hover:text-scarlet-600 transition-colors">Products</Link>
-          {(user?.role === 'vendor' || user?.role === 'admin' || user?.role === 'super_admin') && (
+          {user?.role === 'vendor' && (
             <Link to="/vendor" className="hover:text-scarlet-600 transition-colors">Vendor</Link>
           )}
           {(user?.role === 'admin' || user?.role === 'super_admin') && (
